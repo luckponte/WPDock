@@ -1,0 +1,63 @@
+version: '3'
+
+services:
+    db:
+        image: mysql:latest
+        container_name: ${PROJECT_NAME}_db
+        volumes:
+            - ${PROJECT_PATH}/db:/var/lib/mysql
+            - ${PROJECT_PATH}/api/db_schema:/db_schema
+        environment:
+          MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+          MYSQL_DATABASE: ${MYSQL_DATABASE}
+        networks:
+          digitalabs:
+            ipv4_address: ${PROJECT_NETWORK}.2
+    nginx:
+        image: nginx
+        container_name: ${PROJECT_NAME}_nginx
+        ports:
+          - 80:80
+          - 8080:8080
+        volumes:
+          - ${PROJECT_PATH}/uploads/:/usr/share/nginx/html/cdn/
+          - ${PROJECT_PATH}/api:/api
+          - ${PROJECT_PATH}/admin:/admin
+          - ${PROJECT_PATH}/logs/nginx/:/var/log/nginx
+          - ./nginx/site.conf:/etc/nginx/conf.d/site.conf
+        links:
+          - php
+        networks:
+          digitalabs:
+            ipv4_address: ${PROJECT_NETWORK}.3
+    php:
+        build: php
+        container_name: ${PROJECT_NAME}_api
+        environment:
+          - MODE=dev
+        volumes:
+          - ${PROJECT_PATH}/uploads/:/uploads
+          - ${PROJECT_PATH}/api:/api
+          - ./php/ssmtp.conf:/etc/ssmtp/ssmtp.conf:ro
+          - ./php/php-mail.conf:/usr/local/etc/php/conf.d/mail.ini:ro
+          - ./php/path.conf:/etc/ssmtp/revaliases:ro
+        networks:
+          digitalabs:
+            ipv4_address: ${PROJECT_NETWORK}.4
+    admin:
+        build: angular
+        container_name: ${PROJECT_NAME}_admin
+        volumes:
+         - ${PROJECT_PATH}/admin:/admin
+        stdin_open: true
+        tty: true
+        networks:
+         digitalabs:
+           ipv4_address: ${PROJECT_NETWORK}.5
+networks:
+  digitalabs:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: ${PROJECT_NETWORK}.0/24
