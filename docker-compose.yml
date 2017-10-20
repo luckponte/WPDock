@@ -23,6 +23,7 @@ services:
           - ${PROJECT_PATH}/uploads/:/usr/share/nginx/html/cdn/
           - ${PROJECT_PATH}/api:/api
           - ${PROJECT_PATH}/admin:/admin
+          - ${PROJECT_PATH}/site:/site
           - ${PROJECT_PATH}/logs/nginx/:/var/log/nginx
           - ./nginx/site.conf:/etc/nginx/conf.d/site.conf
         links:
