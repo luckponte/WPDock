@@ -13,48 +13,23 @@ services:
         networks:
           digitalabs:
             ipv4_address: ${PROJECT_NETWORK}.2
-    nginx:
-        image: nginx
-        container_name: ${PROJECT_NAME}_nginx
+    wordpress:
+        image: wordpress:latest
+        container_name: ${PROJECT_NAME}_wp
         ports:
-          - 80:80
-          - 8080:8080
-        volumes:
-          - ${PROJECT_PATH}/uploads/:/usr/share/nginx/html/cdn/
-          - ${PROJECT_PATH}/api:/api
-          - ${PROJECT_PATH}/admin:/admin
-          - ${PROJECT_PATH}/site:/site
-          - ${PROJECT_PATH}/logs/nginx/:/var/log/nginx
-          - ./nginx/site.conf:/etc/nginx/conf.d/site.conf
-        links:
-          - php
-        networks:
-          digitalabs:
-            ipv4_address: ${PROJECT_NETWORK}.3
-    php:
-        build: php
-        container_name: ${PROJECT_NAME}_api
+          - 8080:80
         environment:
           - MODE=dev
         volumes:
-          - ${PROJECT_PATH}/uploads/:/uploads
-          - ${PROJECT_PATH}/api:/api
-          - ./php/ssmtp.conf:/etc/ssmtp/ssmtp.conf:ro
-          - ./php/php-mail.conf:/usr/local/etc/php/conf.d/mail.ini:ro
-          - ./php/path.conf:/etc/ssmtp/revaliases:ro
+          # - ${PROJECT_PATH}/uploads/:/uploads
+          - ${PROJECT_PATH}/wordpress:/var/www/html
+          - ${PROJECT_PATH}/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+          # - ./php/ssmtp.conf:/etc/ssmtp/ssmtp.conf:ro
+          # - ./php/php-mail.conf:/usr/local/etc/php/conf.d/mail.ini:ro
+          # - ./php/path.conf:/etc/ssmtp/revaliases:ro
         networks:
           digitalabs:
             ipv4_address: ${PROJECT_NETWORK}.4
-    admin:
-        build: angular
-        container_name: ${PROJECT_NAME}_admin
-        volumes:
-         - ${PROJECT_PATH}/admin:/admin
-        stdin_open: true
-        tty: true
-        networks:
-         digitalabs:
-           ipv4_address: ${PROJECT_NETWORK}.5
 networks:
   digitalabs:
     driver: bridge
